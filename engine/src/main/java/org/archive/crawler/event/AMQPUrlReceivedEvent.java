@@ -19,8 +19,11 @@
 
 package org.archive.crawler.event;
 
+import org.archive.crawler.frontier.AMQPUrlReceiver;
+import org.archive.modules.CrawlURI;
 import org.springframework.context.ApplicationEvent;
 
+import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.AMQP.BasicProperties;
 
 /**
