@@ -35,7 +35,7 @@ import org.springframework.context.ApplicationListener;
  */
 public class AMQPUrlWaiter implements ApplicationListener<ApplicationEvent> {
 
-    int urlsReceived = 0;
+    protected int urlsReceived = 0;
 
     protected CrawlController controller;
     public CrawlController getCrawlController() {
@@ -49,7 +49,6 @@ public class AMQPUrlWaiter implements ApplicationListener<ApplicationEvent> {
     @Override
     public void onApplicationEvent(ApplicationEvent event) {
         if (event instanceof AMQPUrlReceivedEvent) {
-            // also? job.getH3Job().modifyBeanProperty("runWhileEmpty", "false");
             urlsReceived += 1;
         } else if (event instanceof StatSnapshotEvent) {
             checkAMQPUrlWait();

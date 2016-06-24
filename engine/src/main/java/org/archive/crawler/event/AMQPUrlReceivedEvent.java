@@ -33,7 +33,7 @@ public class AMQPUrlReceivedEvent extends ApplicationEvent {
     private static final long serialVersionUID = 1L;
 
     public AMQPUrlReceivedEvent(AMQPUrlReceiver source, CrawlURI curi) {
-		super(source);
+        super(source);
         this.curi = curi;
     }
 }
