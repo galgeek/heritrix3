@@ -45,6 +45,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.Lifecycle;
 
@@ -60,7 +63,8 @@ import com.rabbitmq.client.ShutdownSignalException;
 /**
  * @contributor nlevitt
  */
-public class AMQPUrlReceiver implements Lifecycle, ApplicationListener<CrawlStateEvent> {
+public class AMQPUrlReceiver
+	implements Lifecycle, ApplicationContextAware, ApplicationListener<CrawlStateEvent> {
 
     @SuppressWarnings("unused")
     private static final long serialVersionUID = 2L;
@@ -69,6 +73,11 @@ public class AMQPUrlReceiver implements Lifecycle, ApplicationListener<CrawlStat
             Logger.getLogger(AMQPUrlReceiver.class.getName());
 
     public static final String A_RECEIVED_FROM_AMQP = "receivedFromAMQP";
+
+    protected ApplicationContext appCtx;
+    public void setApplicationContext(ApplicationContext appCtx) throws BeansException {
+        this.appCtx = appCtx;
+    }
 
     protected CandidatesProcessor candidates;
     public CandidatesProcessor getCandidates() {
@@ -331,6 +340,7 @@ public class AMQPUrlReceiver implements Lifecycle, ApplicationListener<CrawlStat
                     CrawlURI curi = makeCrawlUri(jo);
                     KeyedProperties.clearAllOverrideContexts();
                     candidates.runCandidateChain(curi, null);
+                    appCtx.publishEvent(new AMQPUrlReceivedEvent(curi));
                 } catch (URIException e) {
                     logger.log(Level.WARNING,
                             "problem creating CrawlURI from json received via AMQP "
