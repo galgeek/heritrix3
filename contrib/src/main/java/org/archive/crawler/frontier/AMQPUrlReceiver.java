@@ -341,7 +341,7 @@ public class AMQPUrlReceiver
                     CrawlURI curi = makeCrawlUri(jo);
                     KeyedProperties.clearAllOverrideContexts();
                     candidates.runCandidateChain(curi, null);
-                    appCtx.publishEvent(new AMQPUrlReceivedEvent(curi));
+                    appCtx.publishEvent(new AMQPUrlReceivedEvent(this, curi));
                 } catch (URIException e) {
                     logger.log(Level.WARNING,
                             "problem creating CrawlURI from json received via AMQP "

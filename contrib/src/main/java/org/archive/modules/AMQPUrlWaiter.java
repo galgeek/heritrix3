@@ -19,6 +19,9 @@
 
 package org.archive.modules;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.archive.crawler.event.AMQPUrlReceivedEvent;
 import org.archive.crawler.event.StatSnapshotEvent;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,22 +29,13 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 
 /**
- * Bean to enforce a wait for Umbra amqp queue
+ * Bean to enforce a wait for Umbra's amqp queue
  * 
- * @contributor 
+ * @contributor galgeek
  */
-public class UmbraWaiter implements ApplicationListener<ApplicationEvent> {
+public class AMQPUrlWaiter implements ApplicationListener<ApplicationEvent> {
 
-    /**
-     * We should setUmbraUrl true once we've received a URL from Umbra...
-     */
-    protected boolean umbraUrl = false;
-    public boolean getUmbraUrl() {
-        return umbraUrl;
-    }
-    public void setUmbraUrl(boolean umbraUrl) {
-        this.umbraUrl = umbraUrl;
-    }
+    int urlsReceived = 0;
 
     protected CrawlController controller;
     public CrawlController getCrawlController() {
@@ -55,21 +49,17 @@ public class UmbraWaiter implements ApplicationListener<ApplicationEvent> {
     @Override
     public void onApplicationEvent(ApplicationEvent event) {
         if (event instanceof AMQPUrlReceivedEvent) {
-            setUmbraUrl(true);
+            // also? job.getH3Job().modifyBeanProperty("runWhileEmpty", "false");
+            urlsReceived += 1;
         } else if (event instanceof StatSnapshotEvent) {
-            checkUmbraWait();
+            checkAMQPUrlWait();
         }
     }
 
-    @Override
-    public void onApplicationEvent(ApplicationEvent event) {
-        if(event instanceof StatSnapshotEvent) {
-            checkUmbraWait();
-        }
-    }
-
-    protected void checkUmbraWait() {
-        if (frontier.isEmpty() && getUmbraUrl()) {
+    protected void checkAMQPUrlWait() {
+        if (frontier.isEmpty() && urlsReceived > 0) {
+            logger.info("frontier is empty and we have received " + urlsReceived + 
+                        " urls from AMQP, stopping crawl with status " + CrawlStatus.FINISHED);
             controller.requestCrawlStop(CrawlStatus.FINISHED);
         }
     }
